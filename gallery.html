@@ -30,6 +30,15 @@
   .pin{max-width:320px;margin:18vh auto;text-align:center;padding:0 18px}
   .pin input{width:100%;font-size:30px;text-align:center;margin:14px 0}
   .pin .btn{width:100%}
+  .prevWrap{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+  .prevCtl{flex:1;min-width:300px}
+  .prev{position:relative;width:420px;max-width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:3px solid var(--muted);background:#000}
+  .prev.live{border-color:#e5484d}
+  .prev iframe{position:absolute;top:0;left:0;width:1280px;height:720px;border:0;transform-origin:0 0;pointer-events:none}
+  .badge2{position:absolute;top:8px;left:8px;z-index:2;font:800 12px Inter;letter-spacing:1px;padding:4px 10px;border-radius:999px;background:#0009;color:#ddd}
+  .prev.live .badge2{background:#e5484d;color:#fff}
+  .prev.live .badge2::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;margin-right:6px;animation:blink 1s infinite}
+  @keyframes blink{50%{opacity:.2}}
   .modal{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;padding:20px}
   .modal .box{background:var(--card);border-radius:18px;padding:24px;max-width:380px;width:100%;text-align:center}
   .modal h3{margin:0 0 8px;font-size:22px}
@@ -62,6 +71,9 @@
 
   <div class="card">
     <h3>Audience screen</h3>
+    <div class="prevWrap">
+    <div class="prev" id="prev"><span class="badge2" id="liveBadge">PREVIEW · SCREEN NOT OPEN</span><iframe id="prevFrame" title="Audience screen preview" tabindex="-1"></iframe></div>
+    <div class="prevCtl">
     <div class="row">
       <button class="btn sm ghost" data-view="blank">Title</button>
       <button class="btn sm ghost" data-view="qr">QR + timer</button>
@@ -76,6 +88,8 @@
       <button class="btn sm" id="tStart">Start</button>
       <button class="btn sm ghost" id="tPause">Pause</button>
       <button class="btn sm ghost" id="tReset">Reset</button>
+    </div>
+    </div>
     </div>
   </div>
 
@@ -209,5 +223,19 @@
       $('grid').innerHTML = ''; seen = {}; stars = []; st.top = []; send(); $('count').textContent = '0';
     }).catch(function (err) { alert('Delete failed: ' + err.message); }).then(closeModal);
   };
+  // Live preview + LIVE badge
+  var lastLive = 0, prevLoaded = false;
+  ch.addEventListener('message', function (e) { var m = e.data || {};
+    if (m.type === 'live') lastLive = Date.now();
+    if (m.type === 'closed') lastLive = 0; });
+  function fitPrev() { var w = $('prev').clientWidth; $('prevFrame').style.transform = 'scale(' + (w / 1280) + ')'; }
+  window.addEventListener('resize', fitPrev);
+  setInterval(function () {
+    if ($('app').style.display === 'none') return;
+    if (!prevLoaded) { prevLoaded = true; $('prevFrame').src = 'screen.html?preview=1&' + new URLSearchParams({ event: st.event, theme: st.theme }).toString(); fitPrev(); }
+    var live = Date.now() - lastLive < 2500;
+    $('prev').classList.toggle('live', live);
+    $('liveBadge').textContent = live ? 'AUDIENCE SCREEN LIVE' : 'PREVIEW · SCREEN NOT OPEN';
+  }, 500);
 </script>
 </body></html>

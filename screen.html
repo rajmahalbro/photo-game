@@ -35,6 +35,7 @@
 <script src="common.js"></script>
 <script>
   var Q = new URLSearchParams(location.search);
+  var PREVIEW = Q.get('preview') === '1';
   var st = { event: cleanEvent(Q.get('event')), theme: cleanTheme(Q.get('theme')), view: 'qr',
              timer: { total: 180000, endAt: 0, left: 180000, running: false }, top: [] };
   var $ = function (id) { return document.getElementById(id); };
@@ -42,7 +43,10 @@
   ch.onmessage = function (e) { var m = e.data || {};
     if (m.type === 'state') { Object.assign(st, m.state); render(); } };
   ch.postMessage({ type: 'hello' });
-  document.body.onclick = function () {
+  if (PREVIEW) { $('hint').style.display = 'none'; document.body.style.cursor = 'default'; }
+  else setInterval(function () { ch.postMessage({ type: 'live' }); }, 1000);
+  window.addEventListener('pagehide', function () { if (!PREVIEW) ch.postMessage({ type: 'closed' }); });
+  document.body.onclick = function () { if (PREVIEW) return;
     if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function(){});
     $('hint').style.display = 'none'; };
   var lastQr = '';
