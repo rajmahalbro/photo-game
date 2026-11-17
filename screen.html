@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Audience Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Righteous&family=Playfair+Display:wght@700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<style>
+  html,body{height:100%;overflow:hidden;cursor:none}
+  .view{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:3vh 3vw}
+  .view.on{display:flex}
+  h2{font-family:var(--display);color:var(--accent);margin:0;text-align:center}
+  #qrView h2{font-size:6vh;margin-bottom:3vh}
+  #qrView .row{display:flex;align-items:center;gap:6vw}
+  #qrBox{background:#fff;padding:2.5vh;border-radius:20px}
+  #qrBox svg{width:50vh;height:50vh;display:block}
+  #timer{font-family:var(--display);font-size:20vh;line-height:1;color:var(--ink);min-width:3.2em;text-align:center}
+  #timer.up{color:var(--accent)}
+  #qrView p{font-size:3.2vh;margin:3vh 0 0}
+  #topView h2{font-size:6vh;margin-bottom:2vh}
+  #topRow{flex:1;width:100%;display:grid;gap:2vw;min-height:0}
+  #topRow div{display:flex;flex-direction:column;min-height:0}
+  #topRow img{flex:1;min-height:0;width:100%;object-fit:cover;border-radius:16px}
+  #topRow p{font-family:var(--display);text-align:center;font-size:4.5vh;margin:1.5vh 0 0}
+  #blankView h2{font-size:9vh}
+  #hint{position:fixed;bottom:12px;left:0;right:0;text-align:center;color:var(--muted);font:14px Inter;cursor:default}
+</style></head>
+<body class="retro">
+<div class="view" id="blankView"><h2 id="blankTitle"></h2></div>
+<div class="view" id="qrView">
+  <h2 id="qrTitle"></h2>
+  <div class="row"><div id="qrBox"></div><div id="timer"></div></div>
+  <p>Scan · type your <b>table number</b> · send <b>one</b> photo</p>
+</div>
+<div class="view" id="topView"><h2>Our Top 3 Tables</h2><div id="topRow"></div></div>
+<div id="hint">Click anywhere for full screen · controlled from the dashboard</div>
+<script src="qrcode.js"></script>
+<script src="common.js"></script>
+<script>
+  var Q = new URLSearchParams(location.search);
+  var st = { event: cleanEvent(Q.get('event')), theme: cleanTheme(Q.get('theme')), view: 'qr',
+             timer: { total: 180000, endAt: 0, left: 180000, running: false }, top: [] };
+  var $ = function (id) { return document.getElementById(id); };
+  var ch = new BroadcastChannel('rajmahal-photo');
+  ch.onmessage = function (e) { var m = e.data || {};
+    if (m.type === 'state') { Object.assign(st, m.state); render(); } };
+  ch.postMessage({ type: 'hello' });
+  document.body.onclick = function () {
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function(){});
+    $('hint').style.display = 'none'; };
+  var lastQr = '';
+  function render() {
+    document.body.className = st.theme;
+    document.title = st.event + ' · Screen';
+    ['blankView', 'qrView', 'topView'].forEach(function (v) { $(v).classList.toggle('on', v === st.view + 'View'); });
+    $('blankTitle').textContent = st.event;
+    $('qrTitle').textContent = st.event + ' · Table Photo';
+    var link = guestLink(st.event, st.theme);
+    if (link !== lastQr) { $('qrBox').innerHTML = qrSvg(link); lastQr = link; }
+    $('topRow').innerHTML = '';
+    $('topRow').style.gridTemplateColumns = 'repeat(' + Math.max(1, st.top.length) + ',1fr)';
+    st.top.forEach(function (t) {
+      var d = document.createElement('div'), img = document.createElement('img'), p = document.createElement('p');
+      img.src = t.src || ''; p.textContent = 'Table ' + t.table; d.appendChild(img); d.appendChild(p); $('topRow').appendChild(d);
+    });
+    tick();
+  }
+  function tick() {
+    var t = st.timer, left = t.running ? t.endAt - Date.now() : t.left;
+    $('timer').textContent = left <= 0 ? "TIME'S UP!" : fmtTime(left);
+    $('timer').classList.toggle('up', left <= 0);
+    $('timer').style.fontSize = left <= 0 ? '9vh' : '';
+  }
+  setInterval(tick, 250);
+  render();
+</script>
+</body></html>
