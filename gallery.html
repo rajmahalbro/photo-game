@@ -31,6 +31,18 @@
   .card.star .badge{display:block}
   .pin{max-width:320px;margin:20vh auto;text-align:center;padding:0 18px}
   .pin input{width:100%;font:800 32px 'Inter';text-align:center;padding:12px;border-radius:14px;border:2px solid var(--muted);background:var(--card);color:var(--ink);margin:16px 0}
+  .bar .btns{display:flex;gap:10px;flex-wrap:wrap}
+  .btn.danger{background:#e5484d;color:#fff}
+  .qr{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:3vh;cursor:pointer}
+  .qr h2{font-family:var(--display);font-size:6vh;margin:0;color:var(--accent)}
+  .qr p{font-size:3vh;margin:0;color:var(--ink)}
+  .qr #qrBox{background:#fff;padding:2.5vh;border-radius:20px}
+  .qr #qrBox svg{width:52vh;height:52vh;display:block}
+  .modal{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal .box{background:var(--card);border-radius:18px;padding:24px;max-width:380px;width:100%;text-align:center}
+  .modal .box h3{margin:0 0 8px;font-size:22px}
+  .modal .box p{color:var(--muted);margin:0 0 18px}
+  .modal .row2{display:flex;gap:10px}
   .reveal{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;padding:3vh 3vw}
   .reveal h2{font-family:var(--display);text-align:center;font-size:5vh;margin:0 0 2vh;color:var(--accent)}
   .reveal .row{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:2vw;min-height:0}
@@ -51,15 +63,35 @@
   <div class="bar">
     <h1><span class="ev"></span> · Table Photos</h1>
     <span class="count" id="count">0 photos</span>
-    <button class="btn" id="showTop">Show Top 3 on screen</button>
+    <div class="btns">
+      <button class="btn" id="showQr">Show QR on screen</button>
+      <button class="btn" id="showTop">Show Top 3 on screen</button>
+      <button class="btn danger" id="delAll">Delete all photos</button>
+    </div>
   </div>
   <p class="hint">Tap a photo to pick it for the Top 3 (tap again to remove). New photos appear automatically.</p>
   <div class="grid" id="grid"></div>
+</div>
+<div class="qr" id="qrScreen">
+  <h2>Retro Table Photo</h2>
+  <div id="qrBox"></div>
+  <p>Scan · type your <b>table number</b> · send <b>one</b> photo</p>
+</div>
+<div class="modal" id="modal">
+  <div class="box">
+    <h3 id="mTitle"></h3>
+    <p id="mText"></p>
+    <div class="row2">
+      <button class="btn ghost" id="mNo">Cancel</button>
+      <button class="btn danger" id="mYes"></button>
+    </div>
+  </div>
 </div>
 <div class="reveal" id="reveal">
   <h2>Our Top 3 Tables</h2>
   <div class="row" id="revealRow"></div>
 </div>
+<script src="qrcode.js"></script>
 <script>
 
   var EXEC = 'https://script.google.com/macros/s/AKfycbwQ655otHkKiDgf3yTFR2SjloXX1K-gqqN3W__pvFCsiYKw5GhkcxPbwVb7eNDvDoTc/exec';
@@ -127,5 +159,43 @@
   };
   $('reveal').onclick = function(){ $('reveal').style.display = 'none';
     if (document.fullscreenElement) document.exitFullscreen(); };
+  // QR screen
+  var qrMade = false;
+  $('showQr').onclick = function(){
+    var guest = location.href.split('gallery.html')[0] + '?' + new URLSearchParams({event: EVENT, theme: THEME}).toString();
+    $('qrScreen').querySelector('h2').textContent = EVENT + ' · Table Photo';
+    if (!qrMade && window.qrcode) { var q = qrcode(0, 'M'); q.addData(guest); q.make(); $('qrBox').innerHTML = q.createSvgTag({cellSize: 8, margin: 0}); qrMade = true; }
+    $('qrScreen').style.display = 'flex';
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function(){});
+  };
+  $('qrScreen').onclick = function(){ $('qrScreen').style.display = 'none';
+    if (document.fullscreenElement) document.exitFullscreen(); };
+
+  // Delete all, with two confirmations
+  var step = 0;
+  function closeModal(){ $('modal').style.display = 'none'; step = 0; }
+  $('mNo').onclick = closeModal;
+  $('delAll').onclick = function(){
+    step = 1;
+    $('mTitle').textContent = 'Delete all photos?';
+    $('mText').textContent = 'This removes every photo for ' + EVENT + ' (' + Object.keys(seen).length + ' photos).';
+    $('mYes').textContent = 'Delete';
+    $('modal').style.display = 'flex';
+  };
+  $('mYes').onclick = function(){
+    if (step === 1) {
+      step = 2;
+      $('mTitle').textContent = 'Are you sure you want to delete?';
+      $('mText').textContent = 'They go to your Google Drive bin (recoverable for 30 days).';
+      $('mYes').textContent = 'Yes, delete them all';
+      return;
+    }
+    $('mYes').disabled = true; $('mYes').textContent = 'Deleting…';
+    api({}, {action: 'clear', event: EVENT, pin: PIN}).then(function(n){
+      $('grid').innerHTML = ''; seen = {}; stars = [];
+      $('count').textContent = n + ' photos deleted';
+    }).catch(function(err){ $('count').textContent = 'Delete failed: ' + err.message; })
+      .then(function(){ $('mYes').disabled = false; closeModal(); });
+  };
 </script>
 </body></html>
