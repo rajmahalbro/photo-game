@@ -9,16 +9,27 @@
   .btn.ghost{color:var(--ink) !important}
   body{min-height:100vh}
   .btn.danger{background:#e5484d;color:#fff}
-  .wrap{max-width:1200px;margin:0 auto;padding:16px 20px 40px}
-  .top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
-  .top h1{margin:0;font-size:26px;color:var(--accent);flex:1;min-width:200px}
-  .card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:14px}
-  .card h3{margin:0 0 12px;font-size:15px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)}
-  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .wrap{max-width:1280px;margin:0 auto;padding:18px 20px 40px}
+  .top{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+  .top h1{margin:0;font-size:28px;color:var(--accent)}
+  .evbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .evbar #evName{width:240px}
+  .main{display:grid;grid-template-columns:minmax(0,3fr) minmax(300px,2fr);gap:16px;margin-bottom:16px}
+  @media (max-width:900px){.main{grid-template-columns:1fr}}
+  .card{background:var(--card);border-radius:16px;padding:18px}
+  .card h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)}
+  .ctl h3:not(:first-child){margin-top:20px}
+  .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+  .seg.four{grid-template-columns:repeat(4,1fr)}
+  .seg .btn{width:100%;text-align:center}
+  .custom{display:flex;align-items:center;gap:4px;border:2px solid var(--muted);border-radius:16px;padding:0 8px}
+  .custom input{width:100%;border:0;background:transparent;padding:8px 2px;text-align:center}
+  .custom span{color:var(--muted);font-size:13px}
+  #clock{font-family:var(--display);font-size:64px;line-height:1;text-align:center;margin:4px 0 14px}
+  .btn.wide{width:100%;margin-top:12px;text-align:center}
   input,select{font:600 16px Inter;padding:10px 12px;border-radius:12px;border:2px solid var(--muted);background:var(--bg);color:var(--ink)}
-  #evName{flex:1;min-width:200px}
-  #mins{width:80px;text-align:center}
-  #clock{font-family:var(--display);font-size:34px;min-width:110px;text-align:center}
+  .phead{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}
+  .phead h3{margin:0}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
   .ph{background:var(--bg);border-radius:12px;overflow:hidden;cursor:pointer;border:3px solid transparent;position:relative}
   .ph.star{border-color:var(--accent)}
@@ -30,9 +41,7 @@
   .pin{max-width:320px;margin:18vh auto;text-align:center;padding:0 18px}
   .pin input{width:100%;font-size:30px;text-align:center;margin:14px 0}
   .pin .btn{width:100%}
-  .prevWrap{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
-  .prevCtl{flex:1;min-width:300px}
-  .prev{position:relative;width:420px;max-width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:3px solid var(--muted);background:#000}
+  .prev{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:3px solid var(--muted);background:#000}
   .prev.live{border-color:#e5484d}
   .prev iframe{position:absolute;top:0;left:0;width:1280px;height:720px;border:0;transform-origin:0 0;pointer-events:none}
   .badge2{position:absolute;top:8px;left:8px;z-index:2;font:800 12px Inter;letter-spacing:1px;padding:4px 10px;border-radius:999px;background:#0009;color:#ddd}
@@ -54,58 +63,57 @@
 </div>
 
 <div class="wrap" id="app" style="display:none">
-  <div class="top">
+  <header class="top">
     <h1 id="title"></h1>
-    <button class="btn" id="openScreen">Open audience screen ↗</button>
+    <div class="evbar">
+      <input id="evName" placeholder="" aria-label="Company / event name">
+      <select id="evTheme" aria-label="Theme"><option value="retro">Retro</option><option value="glitz">Glitz Gala</option><option value="noir">Noir</option><option value="clean">Clean</option></select>
+      <button class="btn sm ghost" id="switchEv">Switch event</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <section class="card">
+      <div class="prev" id="prev"><span class="badge2" id="liveBadge">PREVIEW · SCREEN NOT OPEN</span><iframe id="prevFrame" title="Audience screen preview" tabindex="-1"></iframe></div>
+      <button class="btn wide" id="openScreen">Open audience screen ↗</button>
+    </section>
+
+    <section class="card ctl">
+      <h3>Show on screen</h3>
+      <div class="seg">
+        <button class="btn sm ghost" data-view="blank">Title</button>
+        <button class="btn sm ghost" data-view="qr">QR + timer</button>
+        <button class="btn sm ghost" data-view="top">Top 3</button>
+      </div>
+      <h3>Timer</h3>
+      <div id="clock">3:00</div>
+      <div class="seg four">
+        <button class="btn sm ghost" data-min="1">1 min</button>
+        <button class="btn sm ghost" data-min="3">3 min</button>
+        <button class="btn sm ghost" data-min="5">5 min</button>
+        <label class="custom"><input id="mins" type="number" min="0.5" step="0.5" aria-label="Custom minutes"><span>min</span></label>
+      </div>
+      <div class="seg">
+        <button class="btn sm" id="tStart">Start</button>
+        <button class="btn sm ghost" id="tPause">Pause</button>
+        <button class="btn sm ghost" id="tReset">Reset</button>
+      </div>
+    </section>
   </div>
 
-  <div class="card">
-    <h3>Event</h3>
-    <div class="row">
-      <input id="evName" placeholder="Company / event name">
-      <select id="evTheme"><option value="retro">Retro</option><option value="glitz">Glitz Gala</option><option value="noir">Noir</option><option value="clean">Clean</option></select>
-      <button class="btn sm" id="switchEv">Switch event</button>
-    </div>
-    <p class="muted">Each event name gets its own Google Drive folder.</p>
-  </div>
-
-  <div class="card">
-    <h3>Audience screen</h3>
-    <div class="prevWrap">
-    <div class="prev" id="prev"><span class="badge2" id="liveBadge">PREVIEW · SCREEN NOT OPEN</span><iframe id="prevFrame" title="Audience screen preview" tabindex="-1"></iframe></div>
-    <div class="prevCtl">
-    <div class="row">
-      <button class="btn sm ghost" data-view="blank">Title</button>
-      <button class="btn sm ghost" data-view="qr">QR + timer</button>
-      <button class="btn sm ghost" data-view="top">Top 3</button>
-    </div>
-    <div class="row" style="margin-top:12px">
-      <span id="clock">3:00</span>
-      <button class="btn sm ghost" data-min="1">1 min</button>
-      <button class="btn sm ghost" data-min="3">3 min</button>
-      <button class="btn sm ghost" data-min="5">5 min</button>
-      <input id="mins" type="number" min="0.5" step="0.5" title="Custom minutes"> <span class="muted">min</span>
-      <button class="btn sm" id="tStart">Start</button>
-      <button class="btn sm ghost" id="tPause">Pause</button>
-      <button class="btn sm ghost" id="tReset">Reset</button>
-    </div>
-    </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="row" style="justify-content:space-between;margin-bottom:12px">
-      <h3 style="margin:0">Photos · <span id="count">0</span></h3>
+  <section class="card">
+    <div class="phead">
+      <h3>Photos · <span id="count">0</span></h3>
       <span class="muted">Tap up to 3 photos to pick the Top 3. New photos appear automatically.</span>
       <button class="btn sm danger" id="delAll">Delete all photos</button>
     </div>
     <div class="grid" id="grid"></div>
-  </div>
+  </section>
 </div>
 
 <div class="modal" id="modal"><div class="box">
   <h3 id="mTitle"></h3><p id="mText"></p>
-  <div class="row" style="justify-content:center">
+  <div class="seg" style="grid-template-columns:1fr 1fr;margin:0">
     <button class="btn ghost" id="mNo">Cancel</button>
     <button class="btn danger" id="mYes"></button>
   </div>
@@ -233,6 +241,7 @@
   setInterval(function () {
     if ($('app').style.display === 'none') return;
     if (!prevLoaded) { prevLoaded = true; $('prevFrame').src = 'screen.html?preview=1&' + new URLSearchParams({ event: st.event, theme: st.theme }).toString(); fitPrev(); }
+    fitPrev();
     var live = Date.now() - lastLive < 2500;
     $('prev').classList.toggle('live', live);
     $('liveBadge').textContent = live ? 'AUDIENCE SCREEN LIVE' : 'PREVIEW · SCREEN NOT OPEN';
