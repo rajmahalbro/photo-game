@@ -19,11 +19,13 @@
   #topRow div{display:flex;flex-direction:column;min-height:0}
   #topRow img{flex:1;min-height:0;width:100%;object-fit:cover;border-radius:16px}
   #topRow p{font-family:var(--display);text-align:center;font-size:4.5vh;margin:1.5vh 0 0}
-  #blankView h2{font-size:9vh}
+  #blankView h2{font-size:11vh}
+  #blankView .ev{font-size:3.5vh;letter-spacing:.5vh;text-transform:uppercase;color:var(--muted);margin:0 0 2vh}
+  #blankView .emo{font-size:14vh;line-height:1;margin-bottom:3vh}
   #hint{position:fixed;bottom:12px;left:0;right:0;text-align:center;color:var(--muted);font:14px Inter;cursor:default}
 </style></head>
 <body class="retro">
-<div class="view" id="blankView"><h2 id="blankTitle"></h2></div>
+<div class="view" id="blankView"><p id="blankTitle" class="ev"></p><div class="emo">🕺 📸</div><h2>Table Photo Game</h2></div>
 <div class="view" id="qrView">
   <h2 id="qrTitle"></h2>
   <div class="row"><div id="qrBox"></div><div id="timer"></div></div>
