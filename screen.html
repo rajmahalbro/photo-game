@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Audience Screen</title>
 <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Playfair+Display:wght@700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="theme.css?v=4">
 <style>
   html,body{height:100%;overflow:hidden;cursor:none}
   .view{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:3vh 3vw}
@@ -33,8 +33,8 @@
 </div>
 <div class="view" id="topView"><h2>Our Top 3 Tables</h2><div id="topRow"></div></div>
 <div id="hint">Click anywhere for full screen · controlled from the dashboard</div>
-<script src="qrcode.js"></script>
-<script src="common.js"></script>
+<script src="qrcode.js?v=4"></script>
+<script src="common.js?v=4"></script>
 <script>
   var Q = new URLSearchParams(location.search);
   var PREVIEW = Q.get('preview') === '1';
