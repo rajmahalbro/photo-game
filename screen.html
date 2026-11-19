@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Audience Screen</title>
-<link href="https://fonts.googleapis.com/css2?family=Righteous&family=Playfair+Display:wght@700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="theme.css?v=4">
+<link href="https://fonts.googleapis.com/css2?family=Righteous&family=Cinzel:wght@600;800&family=Playfair+Display:wght@700&family=Bebas+Neue&family=Great+Vibes&family=Montserrat:wght@400;600;700;800&family=Bungee&family=Poppins:wght@400;600;700;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css?v=6">
 <style>
   html,body{height:100%;overflow:hidden;cursor:none}
   .view{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:3vh 3vw}
@@ -11,21 +11,27 @@
   #qrView .row{display:flex;align-items:center;gap:6vw}
   #qrBox{background:#fff;padding:2.5vh;border-radius:20px}
   #qrBox svg{width:50vh;height:50vh;display:block}
-  #timer{font-family:var(--display);font-size:20vh;line-height:1;color:var(--ink);min-width:3.2em;text-align:center}
+  #timer{font-family:var(--display);font-weight:var(--dw);font-size:20vh;line-height:1;color:var(--ink);min-width:3.2em;text-align:center}
   #timer.up{color:var(--accent)}
   #qrView p{font-size:3.2vh;margin:3vh 0 0}
   #topView h2{font-size:6vh;margin-bottom:2vh}
   #topRow{flex:1;width:100%;display:grid;gap:2vw;min-height:0}
   #topRow div{display:flex;flex-direction:column;min-height:0}
   #topRow img{flex:1;min-height:0;width:100%;object-fit:cover;border-radius:16px}
-  #topRow p{font-family:var(--display);text-align:center;font-size:4.5vh;margin:1.5vh 0 0}
+  #topRow p{font-family:var(--display);font-weight:var(--dw);text-align:center;font-size:4.5vh;margin:1.5vh 0 0}
   #blankView h2{font-size:11vh}
   #blankView .ev{font-size:3.5vh;letter-spacing:.5vh;text-transform:uppercase;color:var(--muted);margin:0 0 2vh}
   #blankView .emo{font-size:14vh;line-height:1;margin-bottom:3vh}
-  #hint{position:fixed;bottom:12px;left:0;right:0;text-align:center;color:var(--muted);font:14px Inter;cursor:default}
+  body.p-glitz::before{content:'';position:fixed;inset:2.2vh;border:1px solid #e2b84a99;outline:1px solid #e2b84a40;outline-offset:.8vh;pointer-events:none}
+  body.p-glitz #blankView .ev,body.p-glitz #qrView p{color:var(--muted)}
+  body.p-glitz #blankView h2::after,body.p-glitz #topView h2::after,body.p-glitz #qrView h2::after{content:'';display:block;width:28vh;height:2px;margin:2vh auto 0;background:linear-gradient(90deg,transparent,#e2b84a,transparent)}
+  body.p-glitz #qrBox{box-shadow:0 0 0 .6vh #e2b84a,0 0 6vh #e2b84a55}
+  body.p-glitz #timer{color:#f7e3a1}
+  body.p-glitz #topRow img{border:.4vh solid #e2b84a}
+  #hint{position:fixed;bottom:12px;left:0;right:0;text-align:center;color:var(--muted);font:14px var(--body);cursor:default}
 </style></head>
-<body class="retro">
-<div class="view" id="blankView"><p id="blankTitle" class="ev"></p><div class="emo">🕺 📸</div><h2>Table Photo Game</h2></div>
+<body class="p-retro f-righteous">
+<div class="view" id="blankView"><p id="blankTitle" class="ev"></p><div class="emo" id="blankEmo">🕺 📸</div><h2>Table Photo Game</h2></div>
 <div class="view" id="qrView">
   <h2 id="qrTitle"></h2>
   <div class="row"><div id="qrBox"></div><div id="timer"></div></div>
@@ -33,12 +39,12 @@
 </div>
 <div class="view" id="topView"><h2>Our Top 3 Tables</h2><div id="topRow"></div></div>
 <div id="hint">Click anywhere for full screen · controlled from the dashboard</div>
-<script src="qrcode.js?v=4"></script>
-<script src="common.js?v=4"></script>
+<script src="qrcode.js?v=6"></script>
+<script src="common.js?v=6"></script>
 <script>
   var Q = new URLSearchParams(location.search);
   var PREVIEW = Q.get('preview') === '1';
-  var st = { event: cleanEvent(Q.get('event')), theme: cleanTheme(Q.get('theme')), view: 'qr',
+  var st = { event: cleanEvent(Q.get('event')), theme: cleanTheme(Q.get('theme')), font: Q.get('font'), view: 'qr',
              timer: { total: 180000, endAt: 0, left: 180000, running: false }, top: [] };
   var $ = function (id) { return document.getElementById(id); };
   var ch = new BroadcastChannel('rajmahal-photo');
@@ -53,12 +59,13 @@
     $('hint').style.display = 'none'; };
   var lastQr = '';
   function render() {
-    document.body.className = st.theme;
+    document.body.className = themeClass(st.theme, st.font);
     document.title = st.event + ' · Screen';
     ['blankView', 'qrView', 'topView'].forEach(function (v) { $(v).classList.toggle('on', v === st.view + 'View'); });
     $('blankTitle').textContent = st.event;
+    $('blankEmo').textContent = themeEmoji(st.theme) + ' 📸';
     $('qrTitle').textContent = st.event + ' · Table Photo';
-    var link = guestLink(st.event, st.theme);
+    var link = guestLink(st.event, st.theme, st.font);
     if (link !== lastQr) { $('qrBox').innerHTML = qrSvg(link); lastQr = link; }
     $('topRow').innerHTML = '';
     $('topRow').style.gridTemplateColumns = 'repeat(' + Math.max(1, st.top.length) + ',1fr)';

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Photo Game Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Righteous&family=Playfair+Display:wght@700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="theme.css?v=4">
+<link href="https://fonts.googleapis.com/css2?family=Righteous&family=Cinzel:wght@600;800&family=Playfair+Display:wght@700&family=Bebas+Neue&family=Great+Vibes&family=Montserrat:wght@400;600;700;800&family=Bungee&family=Poppins:wght@400;600;700;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css?v=6">
 <style>
   .btn{width:auto;padding:12px 18px;font-size:16px;display:inline-block}
   .btn.sm{padding:9px 14px;font-size:15px}
@@ -27,7 +27,7 @@
   .custom span{color:var(--muted);font-size:13px}
   #clock{font-family:var(--display);font-size:64px;line-height:1;text-align:center;margin:4px 0 14px}
   .btn.wide{width:100%;margin-top:12px;text-align:center}
-  input,select{font:600 16px Inter;padding:10px 12px;border-radius:12px;border:2px solid var(--muted);background:var(--bg);color:var(--ink)}
+  input,select{font:600 16px var(--body);padding:10px 12px;border-radius:12px;border:2px solid var(--muted);background:var(--bg);color:var(--ink)}
   .phead{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}
   .phead h3{margin:0}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
@@ -44,7 +44,7 @@
   .prev{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:3px solid var(--muted);background:#000}
   .prev.live{border-color:#e5484d}
   .prev iframe{position:absolute;top:0;left:0;width:1280px;height:720px;border:0;transform-origin:0 0;pointer-events:none}
-  .badge2{position:absolute;top:8px;left:8px;z-index:2;font:800 12px Inter;letter-spacing:1px;padding:4px 10px;border-radius:999px;background:#0009;color:#ddd}
+  .badge2{position:absolute;top:8px;left:8px;z-index:2;font:800 12px var(--body);letter-spacing:1px;padding:4px 10px;border-radius:999px;background:#0009;color:#ddd}
   .prev.live .badge2{background:#e5484d;color:#fff}
   .prev.live .badge2::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;margin-right:6px;animation:blink 1s infinite}
   @keyframes blink{50%{opacity:.2}}
@@ -52,8 +52,19 @@
   .modal .box{background:var(--card);border-radius:18px;padding:24px;max-width:380px;width:100%;text-align:center}
   .modal h3{margin:0 0 8px;font-size:22px}
   .modal p{color:var(--muted);margin:0 0 18px}
+  .tabs{display:flex;gap:8px;margin:0 0 16px}
+  .tab{font:800 16px var(--body);padding:10px 18px;border-radius:999px;border:2px solid var(--muted);background:transparent;color:var(--ink);cursor:pointer}
+  .tab.on{background:var(--accent);border-color:var(--accent);color:var(--btnInk)}
+  .opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+  .opt{text-align:left;border-radius:14px;border:3px solid transparent;background:var(--bg);color:var(--ink);padding:0;cursor:pointer;overflow:hidden;font-family:var(--body)}
+  .opt.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+  .opt .sw{height:86px;display:flex;align-items:center;justify-content:center;font-size:22px;padding:0 10px;text-align:center;line-height:1.1}
+  .opt .nm{padding:10px 12px 2px;font-weight:800;font-size:15px}
+  .opt .use{padding:0 12px 10px;font-size:13px;color:var(--muted)}
+  .opt .dots{display:flex;gap:5px;padding:8px 12px 0}
+  .opt .dots i{width:16px;height:16px;border-radius:50%;border:1px solid #8886}
 </style></head>
-<body class="retro">
+<body class="p-retro f-righteous">
 <div class="pin" id="pinBox">
   <h1 class="display">Photo Game</h1>
   <p>Dashboard. Enter your PIN.</p>
@@ -67,11 +78,16 @@
     <h1 id="title"></h1>
     <div class="evbar">
       <input id="evName" placeholder="" aria-label="Company / event name">
-      <select id="evTheme" aria-label="Theme"><option value="retro">Retro</option><option value="glitz">Glitz Gala</option><option value="noir">Noir</option><option value="clean">Clean</option></select>
       <button class="btn sm ghost" id="switchEv">Switch event</button>
     </div>
   </header>
 
+  <nav class="tabs">
+    <button class="tab on" data-tab="Game">🎮 Game</button>
+    <button class="tab" data-tab="Settings">⚙️ Settings</button>
+  </nav>
+
+  <div id="tabGame">
   <div class="main">
     <section class="card">
       <div class="prev" id="prev"><span class="badge2" id="liveBadge">PREVIEW · SCREEN NOT OPEN</span><iframe id="prevFrame" title="Audience screen preview" tabindex="-1"></iframe></div>
@@ -109,6 +125,20 @@
     </div>
     <div class="grid" id="grid"></div>
   </section>
+  </div>
+
+  <div id="tabSettings" style="display:none">
+    <section class="card">
+      <h3>Colour palette</h3>
+      <p class="muted" style="margin:-4px 0 12px">Changes the dashboard, the audience screen and the guest page.</p>
+      <div class="opts" id="palOpts"></div>
+    </section>
+    <section class="card" style="margin-top:16px">
+      <h3>Font pairing</h3>
+      <p class="muted" style="margin:-4px 0 12px">Pick any font with any palette.</p>
+      <div class="opts" id="fontOpts"></div>
+    </section>
+  </div>
 </div>
 
 <div class="modal" id="modal"><div class="box">
@@ -119,26 +149,28 @@
   </div>
 </div></div>
 
-<script src="qrcode.js?v=4"></script>
-<script src="common.js?v=4"></script>
+<script src="qrcode.js?v=6"></script>
+<script src="common.js?v=6"></script>
 <script>
   var $ = function (id) { return document.getElementById(id); };
   var Q = new URLSearchParams(location.search);
   var saved = {}; try { saved = JSON.parse(localStorage.getItem('rm-photo-last') || '{}'); } catch (x) {}
-  var st = { event: cleanEvent(Q.get('event') || saved.event), theme: cleanTheme(Q.get('theme') || saved.theme), view: 'qr',
+  var st = { event: cleanEvent(Q.get('event') || saved.event), theme: cleanTheme(Q.get('theme') || saved.theme), font: null, view: 'qr',
              timer: { total: 180000, endAt: 0, left: 180000, running: false }, top: [] };
+  st.font = cleanFont(Q.get('font') || (Q.get('theme') ? null : saved.font), st.theme);
   var PIN = '', seen = {}, stars = [], poll = null;
   var ch = new BroadcastChannel('rajmahal-photo');
   ch.onmessage = function (e) { if (e.data && e.data.type === 'hello') send(); };
   function send() { ch.postMessage({ type: 'state', state: st }); }
 
   function applyEvent() {
-    document.body.className = st.theme;
+    document.body.className = themeClass(st.theme, st.font);
+    document.documentElement.style.background = findP(st.theme)[3][0];
     $('title').textContent = st.event + ' · Photo Game';
     document.title = st.event + ' · Dashboard';
-    $('evName').value = st.event; $('evTheme').value = st.theme;
-    history.replaceState(null, '', '?' + new URLSearchParams({ event: st.event, theme: st.theme }).toString());
-    try { localStorage.setItem('rm-photo-last', JSON.stringify({ event: st.event, theme: st.theme })); } catch (x) {}
+    $('evName').value = st.event; paintOpts();
+    history.replaceState(null, '', '?' + new URLSearchParams({ event: st.event, theme: st.theme, font: st.font }).toString());
+    try { localStorage.setItem('rm-photo-last', JSON.stringify({ event: st.event, theme: st.theme, font: st.font })); } catch (x) {}
   }
 
   // PIN
@@ -157,15 +189,43 @@
 
   // Event switch
   $('switchEv').onclick = function () {
-    st.event = cleanEvent($('evName').value); st.theme = cleanTheme($('evTheme').value);
+    st.event = cleanEvent($('evName').value);
     seen = {}; stars = []; st.top = []; $('grid').innerHTML = ''; $('count').textContent = '0';
     applyEvent(); send(); refresh();
   };
 
+  // Tabs + Settings
+  document.querySelectorAll('.tab').forEach(function (b) { b.onclick = function () {
+    document.querySelectorAll('.tab').forEach(function (x) { x.classList.toggle('on', x === b); });
+    $('tabGame').style.display = b.dataset.tab === 'Game' ? '' : 'none';
+    $('tabSettings').style.display = b.dataset.tab === 'Settings' ? '' : 'none'; }; });
+  function el(tag, cls, txt) { var n = document.createElement(tag); if (cls) n.className = cls; if (txt != null) n.textContent = txt; return n; }
+  PALETTES.forEach(function (p) {
+    var b = el('button', 'opt'); b.dataset.pal = p[0];
+    var sw = el('div', 'sw', 'Table Photo'); sw.style.background = p[3][0]; sw.style.color = p[3][2];
+    sw.style.fontFamily = "'" + findF(p[4])[3] + "'"; sw.style.fontWeight = findF(p[4])[4];
+    var dots = el('div', 'dots'); p[3].forEach(function (c) { var i = el('i'); i.style.background = c; dots.appendChild(i); });
+    b.appendChild(sw); b.appendChild(dots); b.appendChild(el('div', 'nm', p[1])); b.appendChild(el('div', 'use', p[2] + ' · suggested font: ' + findF(p[4])[1].split(' +')[0]));
+    b.onclick = function () { st.theme = p[0]; applyEvent(); send(); };
+    $('palOpts').appendChild(b);
+  });
+  FONTS.forEach(function (f) {
+    var b = el('button', 'opt'); b.dataset.font = f[0];
+    var sw = el('div', 'sw', 'Table Photo Game'); sw.style.fontFamily = "'" + f[3] + "'"; sw.style.fontWeight = f[4];
+    sw.style.fontSize = f[0] === 'vibes' ? '34px' : '24px';
+    b.appendChild(sw); b.appendChild(el('div', 'nm', f[1])); b.appendChild(el('div', 'use', f[2]));
+    b.onclick = function () { st.font = f[0]; applyEvent(); send(); };
+    $('fontOpts').appendChild(b);
+  });
+  function paintOpts() {
+    document.querySelectorAll('[data-pal]').forEach(function (b) { b.classList.toggle('on', b.dataset.pal === st.theme); });
+    document.querySelectorAll('[data-font]').forEach(function (b) { b.classList.toggle('on', b.dataset.font === st.font); });
+  }
+
   // Screen window
   var screenWin = null;
   $('openScreen').onclick = function () {
-    screenWin = window.open('screen.html?v=4&' + new URLSearchParams({ event: st.event, theme: st.theme }).toString(),
+    screenWin = window.open('screen.html?v=6&' + new URLSearchParams({ event: st.event, theme: st.theme, font: st.font }).toString(),
                 'rajmahal-screen', 'popup,width=1280,height=720');
     setTimeout(send, 800);
   };
@@ -241,7 +301,7 @@
   window.addEventListener('resize', fitPrev);
   setInterval(function () {
     if ($('app').style.display === 'none') return;
-    if (!prevLoaded) { prevLoaded = true; $('prevFrame').src = 'screen.html?v=4&preview=1&' + new URLSearchParams({ event: st.event, theme: st.theme }).toString(); fitPrev(); }
+    if (!prevLoaded) { prevLoaded = true; $('prevFrame').src = 'screen.html?v=6&preview=1&' + new URLSearchParams({ event: st.event, theme: st.theme, font: st.font }).toString(); fitPrev(); }
     fitPrev();
     var live = (screenWin && !screenWin.closed) || Date.now() - lastLive < 2500;
     $('prev').classList.toggle('live', live);
