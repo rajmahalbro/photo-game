@@ -13,7 +13,15 @@
   .top{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
   .top h1{margin:0;font-size:28px;color:var(--accent)}
   .evbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .evbar #evName{width:240px}
+  .evlist{display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow:auto;margin:0 0 16px;text-align:left}
+  .evrow{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:12px;padding:10px 12px}
+  .evrow .nm{flex:1;min-width:0}
+  .evrow b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .evrow small{color:var(--muted)}
+  .evrow .cur{font:800 12px var(--body);letter-spacing:1px;color:var(--accent)}
+  .newev{display:flex;gap:8px}
+  .newev input{flex:1;min-width:0}
+  .modal .box.wide{max-width:520px}
   .main{display:grid;grid-template-columns:minmax(0,3fr) minmax(300px,2fr);gap:16px;margin-bottom:16px}
   @media (max-width:900px){.main{grid-template-columns:1fr}}
   .card{background:var(--card);border-radius:16px;padding:18px}
@@ -77,8 +85,7 @@
   <header class="top">
     <h1 id="title"></h1>
     <div class="evbar">
-      <input id="evName" placeholder="" aria-label="Company / event name">
-      <button class="btn sm ghost" id="switchEv">Switch event</button>
+      <button class="btn sm ghost" id="evBtn">📂 Events</button>
     </div>
   </header>
 
@@ -141,6 +148,22 @@
   </div>
 </div>
 
+<div class="modal" id="evModal"><div class="box wide">
+  <h3>Events</h3>
+  <p>Pick an event to go back to it, or create a new one. Photos for every event stay saved.</p>
+  <div class="evlist" id="evList"></div>
+  <div class="newev"><input id="newEv" aria-label="New event name"><button class="btn sm" id="createEv">Create</button></div>
+  <button class="btn ghost wide" id="evClose">Close</button>
+</div></div>
+
+<div class="modal" id="cModal"><div class="box">
+  <h3 id="cTitle"></h3><p id="cText"></p>
+  <div class="seg" style="grid-template-columns:1fr 1fr;margin:0">
+    <button class="btn ghost" id="cNo">Cancel</button>
+    <button class="btn" id="cYes">Yes, switch</button>
+  </div>
+</div></div>
+
 <div class="modal" id="modal"><div class="box">
   <h3 id="mTitle"></h3><p id="mText"></p>
   <div class="seg" style="grid-template-columns:1fr 1fr;margin:0">
@@ -168,7 +191,7 @@
     document.documentElement.style.background = findP(st.theme)[3][0];
     $('title').textContent = st.event + ' · Photo Game';
     document.title = st.event + ' · Dashboard';
-    $('evName').value = st.event; paintOpts();
+    paintOpts(); remember();
     history.replaceState(null, '', '?' + new URLSearchParams({ event: st.event, theme: st.theme, font: st.font }).toString());
     try { localStorage.setItem('rm-photo-last', JSON.stringify({ event: st.event, theme: st.theme, font: st.font })); } catch (x) {}
   }
@@ -188,9 +211,49 @@
   if (PIN) start();
 
   // Event switch
-  $('switchEv').onclick = function () {
-    st.event = cleanEvent($('evName').value);
+  // Events: remembered on this laptop, newest first
+  function loadEvents() { try { return JSON.parse(localStorage.getItem('rm-photo-events') || '[]'); } catch (x) { return []; } }
+  function remember() {
+    var list = loadEvents().filter(function (e) { return e.event !== st.event; });
+    list.unshift({ event: st.event, theme: st.theme, font: st.font, used: Date.now() });
+    try { localStorage.setItem('rm-photo-events', JSON.stringify(list.slice(0, 30))); } catch (x) {}
+  }
+  function paintEvents() {
+    $('evList').innerHTML = '';
+    loadEvents().forEach(function (e) {
+      var row = el('div', 'evrow'), nm = el('div', 'nm');
+      nm.appendChild(el('b', '', e.event));
+      var p = findP(cleanTheme(e.theme)), f = findF(cleanFont(e.font, e.theme));
+      nm.appendChild(el('small', '', p[1] + ' · ' + f[1] + ' · ' + new Date(e.used).toLocaleDateString()));
+      row.appendChild(nm);
+      if (e.event === st.event) row.appendChild(el('span', 'cur', 'CURRENT'));
+      else { var b = el('button', 'btn sm', 'Open'); b.onclick = function () { askSwitch(e.event, e.theme, e.font); }; row.appendChild(b); }
+      $('evList').appendChild(row);
+    });
+  }
+  $('evBtn').onclick = function () { paintEvents(); $('newEv').value = ''; $('evModal').style.display = 'flex'; };
+  $('evClose').onclick = function () { $('evModal').style.display = 'none'; };
+  $('createEv').onclick = function () {
+    var name = $('newEv').value.trim(); if (!name) { $('newEv').focus(); return; }
+    var ex = loadEvents().filter(function (e) { return e.event === cleanEvent(name); })[0];
+    askSwitch(name, ex ? ex.theme : st.theme, ex ? ex.font : st.font, !ex);
+  };
+  $('newEv').onkeydown = function (e) { if (e.key === 'Enter') $('createEv').click(); };
+  var pending = null;
+  function askSwitch(name, theme, font, isNew) {
+    pending = { event: cleanEvent(name), theme: cleanTheme(theme), font: cleanFont(font, theme) };
+    if (pending.event === st.event) { $('evModal').style.display = 'none'; return; }
+    $('cTitle').textContent = (isNew ? 'Create and switch to ' : 'Switch to ') + pending.event + '?';
+    $('cText').textContent = 'The audience screen and QR code will change to ' + pending.event + '. Photos from ' + st.event +
+      ' stay saved, and you can come back to it any time from Events.';
+    $('cModal').style.display = 'flex';
+  }
+  $('cNo').onclick = function () { $('cModal').style.display = 'none'; pending = null; };
+  $('cYes').onclick = function () {
+    if (!pending) return;
+    st.event = pending.event; st.theme = pending.theme; st.font = pending.font; pending = null;
     seen = {}; stars = []; st.top = []; $('grid').innerHTML = ''; $('count').textContent = '0';
+    $('cModal').style.display = 'none'; $('evModal').style.display = 'none';
     applyEvent(); send(); refresh();
   };
 
