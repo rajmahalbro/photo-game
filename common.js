@@ -10,6 +10,7 @@ var PALETTES = [
   ['red', 'Lucky Red', 'CNY, Deepavali, festive', ['#5a0b0b', '#fff3df', '#ffcf4d', '#ff6b4a'], 'cinzel', '🧧'],
   ['blush', 'Blush & Rose Gold', 'Weddings, D&D, launches', ['#fbf1ef', '#3b2a2a', '#c7837a', '#d79a8a'], 'vibes', '💐'],
   ['neon', 'Neon Night', 'Parties, Y2K, music', ['#0a0614', '#ffffff', '#ff2fa8', '#21e6ff'], 'bungee', '🪩'],
+  ['retronights', 'Retro Nights', 'Neon 70s–90s, disco, arcade', ['#0b0a36', '#ffffff', '#f7e06a', '#2ee6ff'], 'pacifico', '🪩'],
   ['noir', 'Hollywood Noir', 'Gatsby, movie night', ['#0a0a0a', '#ffffff', '#ffffff', '#9e9e9e'], 'playfair', '🎬']
 ];
 // Font pairings: id, name, good for, title font, title weight
@@ -20,6 +21,7 @@ var FONTS = [
   ['bebas', 'Bebas Neue + Montserrat', 'Bold corporate', 'Bebas Neue', 400],
   ['vibes', 'Great Vibes + Montserrat', 'Weddings', 'Great Vibes', 400],
   ['bungee', 'Bungee + Inter', 'Party, neon', 'Bungee', 400],
+  ['pacifico', 'Pacifico + Poppins', 'Retro script', 'Pacifico', 400],
   ['poppins', 'Poppins', 'Friendly, family day', 'Poppins', 700]
 ];
 function findP(id) { for (var i = 0; i < PALETTES.length; i++) if (PALETTES[i][0] === id) return PALETTES[i]; return null; }

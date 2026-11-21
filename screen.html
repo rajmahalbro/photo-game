@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Audience Screen</title>
-<link href="https://fonts.googleapis.com/css2?family=Righteous&family=Cinzel:wght@600;800&family=Playfair+Display:wght@700&family=Bebas+Neue&family=Great+Vibes&family=Montserrat:wght@400;600;700;800&family=Bungee&family=Poppins:wght@400;600;700;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="theme.css?v=6">
+<link href="https://fonts.googleapis.com/css2?family=Righteous&family=Cinzel:wght@600;800&family=Playfair+Display:wght@700&family=Bebas+Neue&family=Great+Vibes&family=Montserrat:wght@400;600;700;800&family=Bungee&family=Pacifico&family=Poppins:wght@400;600;700;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css?v=7">
 <style>
   html,body{height:100%;overflow:hidden;cursor:none}
   .view{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:3vh 3vw}
@@ -16,8 +16,11 @@
   #qrView p{font-size:3.2vh;margin:3vh 0 0}
   #topView h2{font-size:6vh;margin-bottom:2vh}
   #topRow{flex:1;width:100%;display:grid;gap:2vw;min-height:0}
-  #topRow div{display:flex;flex-direction:column;min-height:0}
-  #topRow img{flex:1;min-height:0;width:100%;object-fit:cover;border-radius:16px}
+  #topRow>div{display:flex;flex-direction:column;min-height:0}
+  #topRow .frame{flex:1;min-height:0;position:relative;overflow:hidden;border-radius:16px;background:#000}
+  #topRow .frame img{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #topRow .frame .bg{object-fit:cover;filter:blur(3vh) brightness(.55);transform:scale(1.15)}
+  #topRow .frame .fg{object-fit:contain}
   #topRow p{font-family:var(--display);font-weight:var(--dw);text-align:center;font-size:4.5vh;margin:1.5vh 0 0}
   #blankView h2{font-size:11vh}
   #blankView .ev{font-size:3.5vh;letter-spacing:.5vh;text-transform:uppercase;color:var(--muted);margin:0 0 2vh}
@@ -27,7 +30,7 @@
   body.p-glitz #blankView h2::after,body.p-glitz #topView h2::after,body.p-glitz #qrView h2::after{content:'';display:block;width:28vh;height:2px;margin:2vh auto 0;background:linear-gradient(90deg,transparent,#e2b84a,transparent)}
   body.p-glitz #qrBox{box-shadow:0 0 0 .6vh #e2b84a,0 0 6vh #e2b84a55}
   body.p-glitz #timer{color:#f7e3a1}
-  body.p-glitz #topRow img{border:.4vh solid #e2b84a}
+  body.p-glitz #topRow .frame{border:.4vh solid #e2b84a}
   #hint{position:fixed;bottom:12px;left:0;right:0;text-align:center;color:var(--muted);font:14px var(--body);cursor:default}
 </style></head>
 <body class="p-retro f-righteous">
@@ -39,8 +42,8 @@
 </div>
 <div class="view" id="topView"><h2>Our Top 3 Tables</h2><div id="topRow"></div></div>
 <div id="hint">Click anywhere for full screen · controlled from the dashboard</div>
-<script src="qrcode.js?v=6"></script>
-<script src="common.js?v=6"></script>
+<script src="qrcode.js?v=7"></script>
+<script src="common.js?v=7"></script>
 <script>
   var Q = new URLSearchParams(location.search);
   var PREVIEW = Q.get('preview') === '1';
@@ -70,8 +73,11 @@
     $('topRow').innerHTML = '';
     $('topRow').style.gridTemplateColumns = 'repeat(' + Math.max(1, st.top.length) + ',1fr)';
     st.top.forEach(function (t) {
-      var d = document.createElement('div'), img = document.createElement('img'), p = document.createElement('p');
-      img.src = t.src || ''; p.textContent = 'Table ' + t.table; d.appendChild(img); d.appendChild(p); $('topRow').appendChild(d);
+      var d = document.createElement('div'), f = document.createElement('div'), p = document.createElement('p');
+      var bg = document.createElement('img'), img = document.createElement('img');
+      f.className = 'frame'; bg.className = 'bg'; img.className = 'fg'; bg.alt = ''; img.alt = 'Table ' + t.table;
+      bg.src = img.src = t.src || ''; f.appendChild(bg); f.appendChild(img);
+      p.textContent = 'Table ' + t.table; d.appendChild(f); d.appendChild(p); $('topRow').appendChild(d);
     });
     tick();
   }
